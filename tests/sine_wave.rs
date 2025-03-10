@@ -3,7 +3,7 @@ use utils::{run_pyin, run_yin};
 
 mod utils;
 
-const FREQUENCIES: [f64; 12] = [
+const FREQUENCIES: [f32; 12] = [
     77.0, 83.0, 100.0, 150.0, 233.0, 250.0, 298.0, 350.0, 1337.0, 1583.0, 3398.0, 4200.0,
 ];
 
@@ -40,7 +40,7 @@ fn test_yin_sine_waves(#[case] index: usize) {
     let data = DATUM[index];
     let pitch = run_yin(data, 48000, 0.15, None);
 
-    let tolerance = if frequency <= 100.0 { 0.05 } else { 0.01 };
+    let tolerance = if frequency <= 100.0 { 0.05f32 } else { 0.01f32 };
 
     approx::assert_relative_eq!(pitch, frequency, epsilon = tolerance * frequency);
 }

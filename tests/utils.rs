@@ -1,19 +1,19 @@
 use std::ops::Range;
 
-use pyin::{PitchDetector, Pyin, Yin};
+use pyin_rs::{PitchDetector, Pyin, Yin};
 
-pub fn load_data(data: &str) -> Vec<f64> {
+pub fn load_data(data: &str) -> Vec<f32> {
     data.lines()
-        .map(|line| line.parse::<f64>().unwrap())
+        .map(|line| line.parse::<f32>().unwrap())
         .collect()
 }
 
 pub fn run_yin(
     data: &str,
     sample_rate: usize,
-    threshold: f64,
+    threshold: f32,
     frequency_range: Option<Range<f64>>,
-) -> f64 {
+) -> f32 {
     let samples = load_data(data);
     let pot_size = 2usize.pow(samples.len().ilog2());
     let samples = samples.into_iter().take(pot_size).collect::<Vec<_>>();
@@ -22,7 +22,7 @@ pub fn run_yin(
     yin.pitch(&samples, frequency_range)
 }
 
-pub fn run_pyin(data: &str, sample_rate: usize, frequency_range: Option<Range<f64>>) -> f64 {
+pub fn run_pyin(data: &str, sample_rate: usize, frequency_range: Option<Range<f64>>) -> f32 {
     let samples = load_data(data);
     let pot_size = 2usize.pow(samples.len().ilog2());
     let samples = samples.into_iter().take(pot_size).collect::<Vec<_>>();

@@ -46,7 +46,7 @@ impl Pyin {
         let mut tau_prob_dist = HashMap::new();
 
         for n in 0..PYIN_N_THRESHOLDS {
-            let threshold = (n + 1) as f64 * PYIN_MIN_THRESHOLD;
+            let threshold = (n + 1) as f32 * PYIN_MIN_THRESHOLD as f32;
             let tau = self.core.threshold(threshold, &tau_range);
 
             if tau >= 0 {
@@ -56,7 +56,7 @@ impl Pyin {
 
         let mut pitch_candidates = Vec::new();
         for (tau, probability) in tau_prob_dist {
-            let f0 = self.core.sample_rate as f64 / self.core.parabolic_interpolation(tau);
+            let f0 = self.core.sample_rate as f32 / self.core.parabolic_interpolation(tau);
 
             if f0 != -0.0 {
                 pitch_candidates.push(PitchCandidate::new(f0, probability));
@@ -68,7 +68,7 @@ impl Pyin {
 }
 
 impl PitchDetector for Pyin {
-    fn pitch(&mut self, audio_buffer: &[f64], frequency_range: Option<Range<f64>>) -> f64 {
+    fn pitch(&mut self, audio_buffer: &[f32], frequency_range: Option<Range<f64>>) -> f32 {
         self.core.preprocess(audio_buffer);
         let f0_estimates = self.probabilistic_threshold(frequency_range);
 

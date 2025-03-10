@@ -15,5 +15,5 @@ pub trait PitchDetector {
      * within a given frequency range.
      * Return 0.0 if no pitch is detected.
      */
-    fn pitch(&mut self, audio_buffer: &[f64], frequency_range: Option<Range<f64>>) -> f64;
+    fn pitch(&mut self, audio_buffer: &[f32], frequency_range: Option<Range<f64>>) -> f32;  
 }

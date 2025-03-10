@@ -5,7 +5,7 @@ use crate::fft::FftContext;
 pub struct YinCore {
     pub(crate) input_size: usize,
     pub(crate) sample_rate: usize,
-    pub(crate) buffer: Vec<f64>,
+    pub(crate) buffer: Vec<f32>,
     pub(crate) fft: FftContext,
 }
 
@@ -23,11 +23,11 @@ impl YinCore {
         }
     }
 
-    fn auto_correlate(&mut self, audio_buffer: &[f64]) {
+    fn auto_correlate(&mut self, audio_buffer: &[f32]) {
         self.fft.buffer_in_mut().copy_from_slice(audio_buffer);
         self.fft.forward();
 
-        let scale = 1.0 / self.fft.input_size() as f64;
+        let scale = 1.0 / self.fft.input_size() as f32;
 
         self.fft
             .buffer_out_mut()
@@ -37,7 +37,7 @@ impl YinCore {
         self.fft.inverse();
     }
 
-    fn difference(&mut self, audio_buffer: &[f64]) {
+    fn difference(&mut self, audio_buffer: &[f32]) {
         self.auto_correlate(audio_buffer);
 
         let fft = self.fft.buffer_in();
@@ -48,18 +48,18 @@ impl YinCore {
 
     /** Cumulative mean normalized difference. */
     fn cmnd(&mut self) {
-        let mut running_sum = 0.0f64;
+        let mut running_sum = 0.0f32;
 
         self.buffer[0] = 1.0;
 
         for tau in 1..self.buffer.len() {
             running_sum += self.buffer[tau];
-            self.buffer[tau] *= tau as f64 / running_sum;
+            self.buffer[tau] *= tau as f32 / running_sum;
         }
     }
 
     /** Take an input buffer, apply difference and CMND on it. */
-    pub(crate) fn preprocess(&mut self, audio_buffer: &[f64]) {
+    pub(crate) fn preprocess(&mut self, audio_buffer: &[f32]) {
         if audio_buffer.len() != self.input_size {
             panic!("audio buffer size mismatch");
         }
@@ -94,7 +94,7 @@ impl YinCore {
      * the threshold.
      * Return -1 if no such tau is found.
      */
-    pub(crate) fn threshold(&self, threshold: f64, tau_range: &Range<usize>) -> isize {
+    pub(crate) fn threshold(&self, threshold: f32, tau_range: &Range<usize>) -> isize {
         let buffer = &self.buffer;
 
         let mut tau = tau_range.start;
@@ -116,24 +116,24 @@ impl YinCore {
         }
     }
 
-    pub(crate) fn parabolic_interpolation(&self, t: usize) -> f64 {
+    pub(crate) fn parabolic_interpolation(&self, t: usize) -> f32 {
         let b = &self.buffer;
         if t < 1 {
             if b[t] <= b[t + 1] {
-                t as f64
+                t as f32
             } else {
-                (t + 1) as f64
+                (t + 1) as f32
             }
         } else if t >= b.len() - 1 {
-            (t - 1) as f64
+            (t - 1) as f32
         } else {
             let den = b[t + 1] + b[t - 1] - 2.0 * b[t];
             let delta = b[t - 1] - b[t + 1];
             if den == 0.0 {
-                t as f64
+                t as f32
             } else {
                 // value is b[t] - delta * delta / (8.0 * den)
-                t as f64 + delta / (2.0 * den)
+                t as f32 + delta / (2.0 * den)
             }
         }
     }

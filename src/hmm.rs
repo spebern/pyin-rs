@@ -13,12 +13,12 @@ const TRANSITION_WIDTH: f64 = 13.0;
 const SELF_TRANS: f64 = 0.99;
 
 pub(crate) struct PitchCandidate {
-    pub frequency: f64,
+    pub frequency: f32,
     pub probability: f64,
 }
 
 impl PitchCandidate {
-    pub fn new(frequency: f64, probability: f64) -> Self {
+    pub fn new(frequency: f32, probability: f64) -> Self {
         Self {
             frequency,
             probability,
@@ -28,7 +28,7 @@ impl PitchCandidate {
 
 pub(crate) struct PitchHmm {
     hmm: HMM,
-    pitch_bins: [f64; N_BINS],
+    pitch_bins: [f32; N_BINS],
     yin_trust: f64,
 }
 
@@ -44,13 +44,13 @@ impl PitchHmm {
         }
     }
 
-    fn build_bins(a4_frequency: f64) -> [f64; N_BINS] {
+    fn build_bins(a4_frequency: f64) -> [f32; N_BINS] {
         let mut bins = [0.0; N_BINS];
         let a: f64 = 2.0f64.powf(1.0 / 12.0);
 
         for i in 0..N_BINS {
             let freq = a4_frequency * a.powi(i as i32 - A4_SEMITONES);
-            bins[i] = freq;
+            bins[i] = freq as f32;
         }
 
         bins
@@ -108,7 +108,7 @@ impl PitchHmm {
         HMM::with_float(&transition, &observation, &initial).unwrap()
     }
 
-    fn bin_pitches(&self, candidates: &[PitchCandidate]) -> (Vec<usize>, [f64; N_BINS]) {
+    fn bin_pitches(&self, candidates: &[PitchCandidate]) -> (Vec<usize>, [f32; N_BINS]) {
         let mut real_pitches = [0.0; N_BINS];
 
         let mut pitch_probs = vec![0.0; 2 * N_BINS + 1];
@@ -121,7 +121,7 @@ impl PitchHmm {
             probability,
         } in candidates
         {
-            let mut prev_delta = f64::MAX;
+            let mut prev_delta = f32::MAX;
             for i in 0..N_BINS {
                 let delta = (frequency - self.pitch_bins[i]).abs();
                 if prev_delta < delta {
@@ -152,7 +152,7 @@ impl PitchHmm {
         (possible_bins, real_pitches)
     }
 
-    pub fn inference(&self, candidates: &[PitchCandidate]) -> f64 {
+    pub fn inference(&self, candidates: &[PitchCandidate]) -> f32 {
         if candidates.is_empty() {
             return -1.0;
         }

@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use realfft::{num_complex::Complex64, ComplexToReal, RealFftPlanner, RealToComplex};
+use realfft::{num_complex::Complex32, ComplexToReal, RealFftPlanner, RealToComplex};
 
 pub(crate) struct FftContext {
-    fft_forward: Arc<dyn RealToComplex<f64>>,
-    fft_inverse: Arc<dyn ComplexToReal<f64>>,
-    buffer_in: Vec<f64>,
-    buffer_out: Vec<Complex64>,
-    scratch: Vec<Complex64>,
+    fft_forward: Arc<dyn RealToComplex<f32>>,
+    fft_inverse: Arc<dyn ComplexToReal<f32>>,
+    buffer_in: Vec<f32>,
+    buffer_out: Vec<Complex32>,
+    scratch: Vec<Complex32>,
 }
 
 impl FftContext {
@@ -16,7 +16,7 @@ impl FftContext {
             panic!("power-of-two input size required. Got {}", size);
         }
 
-        let mut real_planner = RealFftPlanner::<f64>::new();
+        let mut real_planner = RealFftPlanner::<f32>::new();
 
         let fft_forward = real_planner.plan_fft_forward(size);
         let fft_inverse = real_planner.plan_fft_inverse(size);
@@ -38,22 +38,22 @@ impl FftContext {
         self.buffer_in.len()
     }
 
-    pub fn buffer_in(&self) -> &[f64] {
+    pub fn buffer_in(&self) -> &[f32] {
         &self.buffer_in
     }
 
-    pub fn buffer_in_mut(&mut self) -> &mut [f64] {
+    pub fn buffer_in_mut(&mut self) -> &mut [f32] {
         &mut self.buffer_in
     }
 
-    pub fn buffer_out_mut(&mut self) -> &mut [Complex64] {
+    pub fn buffer_out_mut(&mut self) -> &mut [Complex32] {
         &mut self.buffer_out
     }
 
     pub fn clear(&mut self) {
         self.buffer_out
             .iter_mut()
-            .for_each(|fft| *fft = Complex64::new(0.0, 0.0));
+            .for_each(|fft| *fft = Complex32::new(0.0, 0.0));
     }
 
     pub fn forward(&mut self) {
